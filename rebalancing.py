@@ -7,22 +7,41 @@ import seaborn as sns
 industries = ['Hlth', 'MedEq', 'Drugs', 'Chems', 'PerSv', 'BusSv', 'Hardw', 'Boxes', 'Trans', 'Whlsl']
 
 # Monthly log returns and standard deviations for each industry
-log_monthly_returns = np.array([0.00446830, 0.01104980, 0.00811191, 0.00536067, 0.00582234,
-                                0.00970914, 0.01022773, 0.00757651, 0.00699353, 0.00895203])
+log_monthly_returns = np.array([
+    0.008920762, 0.006226136, 0.004542421, 0.007491927,
+    0.006620084, 0.007516075, 0.007238083, 0.006239284,
+    0.007729881, 0.006490875
+])
+
 log_monthly_sd = np.array([0.06247597, 0.05248158, 0.04298716, 0.06150907, 0.05673731,
                            0.05714840, 0.06128117, 0.05447807, 0.06203335, 0.05163784])
+covariance_matrix = [
+    [0.003903246, 0.002685027, 0.001772876, 0.002608728, 0.002472589, 0.00273905, 0.002181002, 0.002034591, 0.002680744, 0.0024383],
+    [0.002685027, 0.002754317, 0.001673374, 0.00216643, 0.001942309, 0.0024147, 0.001961979, 0.001852768, 0.002253361, 0.001943873],
+    [0.001772876, 0.001673374, 0.001847896, 0.001577198, 0.001373, 0.001578189, 0.001564952, 0.001263841, 0.001506237, 0.001416454],
+    [0.002608728, 0.00216643, 0.001577198, 0.003783366, 0.002654266, 0.002790747, 0.00260694, 0.002615968, 0.003116348, 0.002704951],
+    [0.002472589, 0.001942309, 0.001373, 0.002654266, 0.003219122, 0.002657204, 0.002242111, 0.002135759, 0.002876172, 0.002377889],
+    [0.00273905, 0.0024147, 0.001578189, 0.002790747, 0.002657204, 0.00326594, 0.002440937, 0.002343735, 0.002914485, 0.002439491],
+    [0.002181002, 0.001961979, 0.001564952, 0.00260694, 0.002242111, 0.002440937, 0.003755381, 0.001993078, 0.002719649, 0.002308104],
+    [0.002034591, 0.001852768, 0.001263841, 0.002615968, 0.002135759, 0.002343735, 0.001993078, 0.00296786, 0.002565307, 0.002095886],
+    [0.002680744, 0.002253361, 0.001506237, 0.003116348, 0.002876172, 0.002914485, 0.002719649, 0.002565307, 0.003848137, 0.002710357],
+    [0.0024383, 0.001943873, 0.001416454, 0.002704951, 0.002377889, 0.002439491, 0.002308104, 0.002095886, 0.002710357, 0.002666467]
+]
 
-low_risk_weighting = np.array([0, 0.323600753, 0.493676024, 0, 0, 0, 0, 0, 0, 0.182723223])
+low_risk_weighting = np.array([
+    0.0000000000, 0.3333332062, 0.3333333793, 0.0070522549,
+    0.0629399444, 0.0268897994, 0.0588509138, 0.0986484668,
+    0.0000000000, 0.0789520352
+])
 
-high_risk_weighting = np.array(
-    [-0.8784695, 0.926440937, 0.366425901, -0.66415044, -0.11571517, 0.253262321, 0.14544411, 0.184731792, -0.314544695,
-     1.096574744])
+med_risk_weighting = np.array([0.4,-0.15,0.223449924,-0.015180713,-0.017866098,0.106999392,0.237423277,0.237860822,0.038247006,-0.06093261])
+high_risk_weighting = np.array([0.4,-0.048690155,-0.23441178,0.246928697,-0.136708383,0.4,0.334766089,0.013374716,0.255801721,-0.231060905])
 
 # Simulation parameters
 initial_investment = 100  # Starting investment amount
 years = 5
 months = years * 12
-iterations = 10000  # Number of simulations
+iterations = 10000 # Number of simulations
 
 
 # Function to simulate portfolio returns with different rebalancing strategies
@@ -34,7 +53,7 @@ def simulate_rebalancing(initial_weights):
 
     # Function to simulate monthly returns
     def simulate_monthly_returns():
-        return np.exp(np.random.normal(log_monthly_returns, log_monthly_sd))-1
+        return np.exp(np.random.multivariate_normal(log_monthly_returns, covariance_matrix)) -1
 
     # Monte Carlo simulation for each rebalancing strategy
     for _ in range(iterations):
@@ -83,6 +102,7 @@ def simulate_rebalancing(initial_weights):
     # Calculate 5th, 10th, 90th, and 95th percentiles for each strategy
     percentiles = results_df.quantile([0.05, 0.10, 0.90, 0.95])
 
+    prob_loss = (results_df < initial_investment).mean()
     # Plot the distributions of final portfolio values for each strategy
     plt.figure(figsize=(12, 8))
     sns.histplot(results_df['Monthly Rebalance'], label='Monthly Rebalance', kde=True)
@@ -100,6 +120,8 @@ def simulate_rebalancing(initial_weights):
     print(summary_stats)
     print("\nPercentiles for Final Portfolio Value After 5 Years:")
     print(percentiles)
+    print(prob_loss)
+
 
 
 # Run simulation for low-risk weighting
@@ -109,3 +131,8 @@ simulate_rebalancing(low_risk_weighting)
 # Run simulation for high-risk weighting
 print("\nHigh-Risk Weighting Simulation:")
 simulate_rebalancing(high_risk_weighting)
+
+# Run simulation for medium-risk weighting
+print("\nMedium-Risk Weighting Simulation:")
+simulate_rebalancing(med_risk_weighting)
+
