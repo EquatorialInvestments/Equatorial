@@ -9,19 +9,37 @@ years = 5
 months = years * 12
 
 # Monthly log returns and standard deviations for each industry
-log_monthly_returns = np.array([0.00446830, 0.01104980, 0.00811191, 0.00536067, 0.00582234,
-                                0.00970914, 0.01022773, 0.00757651, 0.00699353, 0.00895203])
+log_monthly_returns = np.array([
+    0.008920762, 0.006226136, 0.004542421, 0.007491927,
+    0.006620084, 0.007516075, 0.007238083, 0.006239284,
+    0.007729881, 0.006490875
+])
 log_monthly_sd = np.array([0.06247597, 0.05248158, 0.04298716, 0.06150907, 0.05673731,
                            0.05714840, 0.06128117, 0.05447807, 0.06203335, 0.05163784])
-
+covariance_matrix = [
+    [0.003903246, 0.002685027, 0.001772876, 0.002608728, 0.002472589, 0.00273905, 0.002181002, 0.002034591, 0.002680744, 0.0024383],
+    [0.002685027, 0.002754317, 0.001673374, 0.00216643, 0.001942309, 0.0024147, 0.001961979, 0.001852768, 0.002253361, 0.001943873],
+    [0.001772876, 0.001673374, 0.001847896, 0.001577198, 0.001373, 0.001578189, 0.001564952, 0.001263841, 0.001506237, 0.001416454],
+    [0.002608728, 0.00216643, 0.001577198, 0.003783366, 0.002654266, 0.002790747, 0.00260694, 0.002615968, 0.003116348, 0.002704951],
+    [0.002472589, 0.001942309, 0.001373, 0.002654266, 0.003219122, 0.002657204, 0.002242111, 0.002135759, 0.002876172, 0.002377889],
+    [0.00273905, 0.0024147, 0.001578189, 0.002790747, 0.002657204, 0.00326594, 0.002440937, 0.002343735, 0.002914485, 0.002439491],
+    [0.002181002, 0.001961979, 0.001564952, 0.00260694, 0.002242111, 0.002440937, 0.003755381, 0.001993078, 0.002719649, 0.002308104],
+    [0.002034591, 0.001852768, 0.001263841, 0.002615968, 0.002135759, 0.002343735, 0.001993078, 0.00296786, 0.002565307, 0.002095886],
+    [0.002680744, 0.002253361, 0.001506237, 0.003116348, 0.002876172, 0.002914485, 0.002719649, 0.002565307, 0.003848137, 0.002710357],
+    [0.0024383, 0.001943873, 0.001416454, 0.002704951, 0.002377889, 0.002439491, 0.002308104, 0.002095886, 0.002710357, 0.002666467]
+]
 # Low-risk weighting
-low_risk_weighting = np.array([0, 0.323600753, 0.493676024, 0, 0, 0, 0, 0, 0, 0.182723223])
+low_risk_weighting = np.array([
+    0.0000000000, 0.3333332062, 0.3333333793, 0.0070522549,
+    0.0629399444, 0.0268897994, 0.0588509138, 0.0986484668,
+    0.0000000000, 0.0789520352
+])
 
 # Simulation parameters
 n_months = months
 n_iterations = 10000
 
-# Initialize an array to store portfolio values for each iteration over time
+# Initialise an array to store portfolio values for each iteration over time
 portfolio_values = np.ones((n_iterations, n_months + 1)) * initial_investment
 
 # Simulate 10,000 paths without rebalancing
@@ -30,7 +48,7 @@ for i in range(n_iterations):
     current_weights = low_risk_weighting.copy()
     for month in range(1, n_months + 1):
         # Generate random returns based on monthly log returns and standard deviations
-        random_returns = np.exp(np.random.normal(log_monthly_returns, log_monthly_sd)) - 1
+        random_returns = np.exp(np.random.multivariate_normal(log_monthly_returns, covariance_matrix )) - 1
 
         # Calculate the portfolio return without rebalancing
         portfolio_monthly_return = np.sum(current_weights * random_returns)
@@ -41,7 +59,7 @@ for i in range(n_iterations):
 
         # Let weights drift naturally (no rebalancing)
         current_weights *= (1 + random_returns)
-        current_weights /= current_weights.sum()  # Normalize to maintain proportions
+        current_weights /= current_weights.sum()  # Normalise to maintain proportions
 
 # Convert results to DataFrame for easier analysis
 portfolio_paths_df = pd.DataFrame(portfolio_values).T
@@ -92,25 +110,25 @@ for i, (lower, upper) in enumerate(interval_pairs):
 plt.plot(percentile_data.index, percentile_data['50 Percentile'] / 1_000_000, color='blue', label='Median Outcome', linewidth=2)
 
 # Set axis labels and title
-plt.xlabel('Years', fontsize=12)
-plt.ylabel('Portfolio Value (Millions $)', fontsize=12)
-plt.title('Projected Low-Risk Portfolio Growth Over 5 Years (No Rebalancing)', fontsize=16)
+plt.xlabel('Years', fontsize=16)
+plt.ylabel('Portfolio Value (Millions $)', fontsize=16)
+plt.title('Projected Low-Risk Portfolio Growth Over 5 Years (No Rebalancing)', fontsize=18)
 
 # Set x-axis to display years instead of months
 xticks_positions = np.arange(0, months + 1, 12)
 xticks_labels = [f'{i}' for i in range(years + 1)]
-plt.xticks(xticks_positions, xticks_labels)
+plt.xticks(xticks_positions, xticks_labels, fontsize = 18)
 
 # Adjust y-axis increments to start from 1 million and increase by 0.5 million
 y_max = (percentile_data.max().max() / 1_000_000) + 1
-plt.yticks(np.arange(1, y_max, 0.5))
+plt.yticks(np.arange(1, y_max, 0.5), fontsize = 12)
 
 # Adding secondary y-axis on the right
 plt.gca().tick_params(axis='y', which='both', labelleft=True, labelright=True)
 
 # Grid and legend
 plt.grid(axis='y', color='gray', linestyle='--', linewidth=0.5)
-plt.legend(loc='upper left', title="Confidence Intervals")
+plt.legend(loc='upper left', title="Confidence Intervals", fontsize = 18)
 
 # Show plot
 plt.show()

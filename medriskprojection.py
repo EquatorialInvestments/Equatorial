@@ -19,9 +19,7 @@ log_monthly_sd = np.array([0.06247597, 0.05248158, 0.04298716, 0.06150907, 0.056
                            0.05714840, 0.06128117, 0.05447807, 0.06203335, 0.05163784])
 
 # Weightings for high-risk portfolio
-high_risk_weighting = np.array([0.4,-0.048690155,-0.23441178,0.246928697,-0.136708383,0.4,0.334766089,0.013374716,0.255801721,-0.231060905])
-
-low_risk_weighting = np.array([0, 0.323600753, 0.493676024, 0, 0, 0, 0, 0, 0, 0.182723223])
+med_risk_weighting = np.array([0.4,-0.15,0.223449924,-0.015180713,-0.017866098,0.106999392,0.237423277,0.237860822,0.038247006,-0.06093261])
 
 covariance_matrix = [
     [0.003903246, 0.002685027, 0.001772876, 0.002608728, 0.002472589, 0.00273905, 0.002181002, 0.002034591, 0.002680744, 0.0024383],
@@ -38,7 +36,7 @@ covariance_matrix = [
 
 # Simulation parameters
 n_months = months
-n_iterations = 100
+n_iterations = 10000
 
 # Initialize an array to store portfolio values for each iteration over time
 portfolio_values = np.ones((n_iterations, n_months + 1)) * initial_investment
@@ -51,7 +49,7 @@ for i in range(n_iterations):
         random_returns = np.exp(np.random.multivariate_normal(log_monthly_returns, covariance_matrix))-1
 
         # Rebalance the weights monthly and calculate the weighted portfolio return
-        weighted_returns = high_risk_weighting * random_returns
+        weighted_returns = med_risk_weighting * random_returns
         portfolio_monthly_return = np.sum(weighted_returns)
 
         # Update portfolio value
@@ -107,9 +105,9 @@ for i, (lower, upper) in enumerate(interval_pairs):
 plt.plot(percentile_data.index, percentile_data['50 Percentile'] / 1_000_000, color='blue', label='Median Outcome', linewidth=2)
 
 # Set axis labels and title
-plt.xlabel('Years', fontsize=24)
-plt.ylabel('Portfolio Value (Millions $)', fontsize=24)
-plt.title('Projected High-Risk Portfolio Growth Over 5 Years (monthly rebalancing)', fontsize=18)
+plt.xlabel('Years', fontsize=18)
+plt.ylabel('Portfolio Value (Millions $)', fontsize=18)
+plt.title('Projected Medium-Risk Portfolio Growth Over 5 Years (monthly rebalancing)', fontsize=18)
 
 # Set x-axis to display years instead of months
 xticks_positions = np.arange(0, months + 1, 12)
