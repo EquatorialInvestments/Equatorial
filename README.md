@@ -1,6 +1,6 @@
 # Equatorial Investments Portfolio Analysis
 
-This repository contains Python scripts for simulating and analysing investment portfolio strategies. The scripts are organized into folders based on their functionality.
+This repository contains Python scripts for simulating and analysing investment portfolio strategies. The scripts are organised into folders based on their functionality.
 
 ## Folder Structure
 - **`projections/`**: Contains scripts for projecting portfolio performance based on different risk levels:
